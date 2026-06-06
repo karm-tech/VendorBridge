@@ -14,10 +14,17 @@ const highlights = [
 export function LoginPage() {
   return (
     <div className="flex min-h-screen bg-background">
-      <div className="relative hidden w-1/2 flex-col justify-between bg-primary p-12 text-primary-foreground lg:flex">
+      <div
+        className="relative hidden w-1/2 flex-col justify-between overflow-hidden p-12 text-white lg:flex"
+        style={{
+          backgroundColor: "#4F46E5",
+          backgroundImage:
+            "radial-gradient(at 80% 0%, rgba(129,140,248,0.6), transparent 50%), radial-gradient(at 0% 100%, rgba(99,102,241,0.55), transparent 45%), linear-gradient(135deg,#4338CA,#4F46E5)",
+        }}
+      >
         <Logo light />
         <div className="space-y-6">
-          <h1 className="max-w-md text-4xl font-bold leading-tight">
+          <h1 className="max-w-md font-serif text-[40px] font-semibold leading-[1.1]">
             Procurement, simplified from RFQ to invoice.
           </h1>
           <ul className="space-y-3">
@@ -31,21 +38,17 @@ export function LoginPage() {
             ))}
           </ul>
         </div>
-        <p className="text-sm text-primary-foreground/70">
-          VendorBridge · Procurement & Vendor Management ERP
-        </p>
+        <p className="text-sm text-white/65">VendorBridge · Procurement &amp; Vendor Management ERP</p>
       </div>
 
       <div className="flex w-full items-center justify-center p-6 lg:w-1/2">
         <div className="w-full max-w-sm space-y-8">
-          <div className="space-y-2 lg:hidden">
+          <div className="lg:hidden">
             <Logo />
           </div>
           <div className="space-y-1.5">
-            <h2 className="text-2xl font-bold tracking-tight">Welcome back</h2>
-            <p className="text-sm text-muted-foreground">
-              Sign in to your VendorBridge workspace.
-            </p>
+            <h2 className="font-serif text-3xl font-semibold tracking-tight text-foreground">Welcome back</h2>
+            <p className="text-sm text-muted-foreground">Sign in to your VendorBridge workspace.</p>
           </div>
 
           <form className="space-y-4">

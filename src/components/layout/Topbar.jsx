@@ -1,6 +1,6 @@
 import { Menu, Search, Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { DefaultAvatar } from "@/components/common/DefaultAvatar"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -9,7 +9,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { initials } from "@/lib/utils"
 import { ROLE_LABELS, ROLES } from "@/constants/roles"
 
 const currentUser = {
@@ -36,29 +35,25 @@ export function Topbar({ onMenuClick }) {
         <input
           type="search"
           placeholder="Search vendors, RFQs, invoices..."
-          className="h-9 w-full rounded-md border border-input bg-muted/40 pl-9 pr-3 text-sm outline-none transition-colors focus:border-ring focus:bg-background"
+          className="h-9 w-full rounded-lg border border-input bg-card pl-9 pr-3 text-sm outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/30"
         />
       </div>
 
       <div className="ml-auto flex items-center gap-1.5">
-        <Button variant="ghost" size="icon" aria-label="Notifications">
-          <Bell className="h-5 w-5" />
+        <Button variant="outline" size="icon" aria-label="Notifications">
+          <Bell className="h-4 w-4" />
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 rounded-full p-1 pr-2.5 transition-colors hover:bg-muted">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback>{initials(currentUser.name)}</AvatarFallback>
-              </Avatar>
+            <button className="flex items-center gap-2 rounded-full p-0.5 pr-2 transition-colors hover:bg-accent">
+              <DefaultAvatar className="h-9 w-9" />
               <span className="hidden text-sm font-medium sm:block">{currentUser.name}</span>
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>
               <div className="font-semibold text-foreground">{currentUser.name}</div>
-              <div className="font-normal text-muted-foreground">
-                {ROLE_LABELS[currentUser.role]}
-              </div>
+              <div className="font-normal text-muted-foreground">{ROLE_LABELS[currentUser.role]}</div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Profile</DropdownMenuItem>

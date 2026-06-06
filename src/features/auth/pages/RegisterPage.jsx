@@ -7,14 +7,14 @@ import { ROLE_OPTIONS } from "@/constants/roles"
 
 export function RegisterPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 p-6">
-      <div className="w-full max-w-xl space-y-8 rounded-2xl border border-border bg-card p-8 shadow-elevated">
+    <div className="flex min-h-screen items-center justify-center bg-background p-6">
+      <div className="w-full max-w-xl space-y-8 rounded-3xl border border-border bg-card p-8 shadow-elevated">
         <div className="space-y-2">
           <Logo />
-          <h2 className="pt-2 text-2xl font-bold tracking-tight">Create your account</h2>
-          <p className="text-sm text-muted-foreground">
-            Set up your VendorBridge workspace in a minute.
-          </p>
+          <h2 className="pt-2 font-serif text-3xl font-semibold tracking-tight text-foreground">
+            Create your account
+          </h2>
+          <p className="text-sm text-muted-foreground">Set up your VendorBridge workspace in a minute.</p>
         </div>
 
         <form className="space-y-4">
@@ -43,7 +43,7 @@ export function RegisterPage() {
               <Label htmlFor="role">Role</Label>
               <select
                 id="role"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 defaultValue=""
               >
                 <option value="" disabled>

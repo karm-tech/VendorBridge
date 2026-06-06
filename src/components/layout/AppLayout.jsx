@@ -7,8 +7,8 @@ export function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-border bg-background lg:block">
+    <div className="min-h-screen bg-background">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-border lg:block">
         <SidebarNav />
       </aside>
 
@@ -18,7 +18,7 @@ export function AppLayout() {
             className="absolute inset-0 bg-foreground/40 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="absolute inset-y-0 left-0 w-64 border-r border-border bg-background shadow-elevated animate-in slide-in-from-left duration-200">
+          <aside className="absolute inset-y-0 left-0 w-64 border-r border-border shadow-elevated animate-in slide-in-from-left duration-200">
             <SidebarNav onNavigate={() => setMobileOpen(false)} />
           </aside>
         </div>
