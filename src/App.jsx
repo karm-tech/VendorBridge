@@ -4,6 +4,7 @@ import { AppLayout } from "@/components/layout/AppLayout"
 import { RequireAuth } from "@/features/auth/RequireAuth"
 import { LoginPage } from "@/features/auth/pages/LoginPage"
 import { RegisterPage } from "@/features/auth/pages/RegisterPage"
+import { LandingPage } from "@/features/marketing/pages/LandingPage"
 import { DashboardPage } from "@/features/dashboard/pages/DashboardPage"
 import { VendorsPage } from "@/features/vendors/pages/VendorsPage"
 import { RfqsPage } from "@/features/rfq/pages/RfqsPage"
@@ -23,6 +24,7 @@ export function App() {
     <AppProviders>
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route element={<RequireAuth />}>
@@ -42,8 +44,7 @@ export function App() {
               <Route path="/activity" element={<ActivityPage />} />
             </Route>
           </Route>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </AppProviders>

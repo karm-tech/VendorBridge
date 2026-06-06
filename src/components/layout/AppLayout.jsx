@@ -2,9 +2,11 @@ import { useState } from "react"
 import { Outlet } from "react-router-dom"
 import { SidebarNav } from "@/components/layout/Sidebar"
 import { Topbar } from "@/components/layout/Topbar"
+import { useRealtime } from "@/lib/realtime"
 
 export function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  useRealtime()
 
   return (
     <div className="min-h-screen bg-background">
