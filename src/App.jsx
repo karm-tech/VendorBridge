@@ -14,6 +14,7 @@ import { ApprovalsPage } from "@/features/approvals/pages/ApprovalsPage"
 import { ApprovalDetailPage } from "@/features/approvals/pages/ApprovalDetailPage"
 import { PurchaseOrdersPage } from "@/features/purchase-orders/pages/PurchaseOrdersPage"
 import { InvoicesPage } from "@/features/invoices/pages/InvoicesPage"
+import { InvoiceDetailPage } from "@/features/invoices/pages/InvoiceDetailPage"
 import { ReportsPage } from "@/features/reports/pages/ReportsPage"
 import { ActivityPage } from "@/features/activity/pages/ActivityPage"
 
@@ -36,6 +37,7 @@ export function App() {
               <Route path="/approvals/:quotationId" element={<ApprovalDetailPage />} />
               <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
               <Route path="/invoices" element={<InvoicesPage />} />
+              <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/activity" element={<ActivityPage />} />
             </Route>
