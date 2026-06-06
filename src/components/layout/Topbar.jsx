@@ -1,4 +1,5 @@
-import { Menu, Search, Bell } from "lucide-react"
+import { Menu, Search, Bell, LogOut, User, Settings } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { DefaultAvatar } from "@/components/common/DefaultAvatar"
 import {
@@ -9,15 +10,21 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { ROLE_LABELS, ROLES } from "@/constants/roles"
-
-const currentUser = {
-  name: "Procurement Officer",
-  email: "officer@vendorbridge.app",
-  role: ROLES.OFFICER,
-}
+import { ROLE_LABELS } from "@/constants/roles"
+import { useAuth } from "@/features/auth/AuthContext"
 
 export function Topbar({ onMenuClick }) {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const name = user ? `${user.firstName} ${user.lastName}`.trim() : "Account"
+  const roleLabel = user ? ROLE_LABELS[user.role] || user.role : ""
+
+  function handleLogout() {
+    logout()
+    navigate("/login", { replace: true })
+  }
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur sm:px-6">
       <Button
@@ -47,19 +54,25 @@ export function Topbar({ onMenuClick }) {
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 rounded-full p-0.5 pr-2 transition-colors hover:bg-accent">
               <DefaultAvatar className="h-9 w-9" />
-              <span className="hidden text-sm font-medium sm:block">{currentUser.name}</span>
+              <span className="hidden text-sm font-medium sm:block">{name}</span>
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>
-              <div className="font-semibold text-foreground">{currentUser.name}</div>
-              <div className="font-normal text-muted-foreground">{ROLE_LABELS[currentUser.role]}</div>
+              <div className="font-semibold text-foreground">{name}</div>
+              {roleLabel && <div className="font-normal text-muted-foreground">{roleLabel}</div>}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuItem>
+              <User className="h-4 w-4" /> Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Settings className="h-4 w-4" /> Settings
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Sign out</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOut className="h-4 w-4" /> Sign out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
