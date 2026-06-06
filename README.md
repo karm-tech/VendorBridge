@@ -1,112 +1,125 @@
 # VendorBridge
 
-> **A role-based Procurement & Vendor Management ERP** that digitizes the full vendor lifecycle:
-> **RFQs → Quotation Comparison → Approvals → Purchase Orders → PDF/Email Invoicing**, with real-time analytics.
+**A role-based Procurement & Vendor Management ERP** that digitizes the full vendor lifecycle:
+RFQs to Quotation Comparison to Approvals to Purchase Orders to GST Invoicing — with real-time updates and analytics.
 
-VendorBridge simplifies and digitizes procurement operations for organizations through a centralized
-platform that manages vendors, RFQs, quotations, approvals, purchase orders, and invoice generation —
-reducing manual procurement inefficiencies with structured workflows and real-time tracking.
+> Built for the Odoo / KSV Hackathon.
 
----
-
-## ✨ Key Features
-
-- **🔐 Authentication & Roles** — Email/password login, signup, forgot password, session handling, and role-based access.
-- **📊 Dashboard** — Pending approvals, active RFQs, recent POs & invoices, analytics cards, and quick actions.
-- **🏢 Vendor Management** — Registration, status tracking, categories, GST & contact details, search & filtering.
-- **📝 RFQ Creation** — Title, product/service details, quantity, attachments, deadlines, and vendor assignment.
-- **💬 Quotation Submission** — Vendors submit pricing, delivery timelines, notes, and editable quotations.
-- **⚖️ Quotation Comparison** — Side-by-side comparison, lowest-price highlighting, delivery & vendor-rating indicators.
-- **✅ Approval Workflow** — Approve/reject with remarks, approval timeline, status tracking, and state transitions.
-- **🧾 Purchase Orders & Invoices** — Auto-generated PO numbers, tax & total calculations, PDF download, print, and email.
-- **🔔 Activity Logs & Notifications** — RFQ/approval/invoice alerts, activity timeline, and audit logs.
-- **📈 Reports & Analytics** — Vendor performance, procurement statistics, spending summaries, and monthly trends.
+**Tech:** React · Vite · Tailwind · shadcn/ui · Express · Prisma · SQLite · Socket.io
 
 ---
 
-## 👥 User Roles
+## Live Demo
 
-| Role | Capabilities |
-|------|--------------|
-| **Procurement Officer** | Create RFQs, compare quotations, generate purchase orders & invoices |
-| **Vendor** | Submit quotations, track RFQ status, view purchase orders |
-| **Manager / Approver** | Approve or reject procurement requests, monitor workflows |
-| **Admin** | Manage users & vendors, view procurement analytics |
+- **Live link:** _add your Vercel URL here_
+- On the login screen, click **"Click here to open the demo"** — it signs in with sample data, no setup required.
+
+## Screenshots
+
+> Screenshots live in `docs/screenshots/`. Capture them from the running app and drop them in
+> (`landing.png`, `dashboard.png`, `comparison.png`, `invoice.png`).
+
+| Dashboard | Quotation Comparison |
+|-----------|----------------------|
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Comparison](docs/screenshots/comparison.png) |
+
+| Reports | GST Invoice |
+|---------|-------------|
+| ![Reports](docs/screenshots/reports.png) | ![Invoice](docs/screenshots/invoice.png) |
 
 ---
 
-## 🔄 Procurement Workflow
+## Features
+
+- **Authentication & Roles** — Email/password login & registration, JWT sessions, role-based route guards, and a one-click demo login (Procurement Officer, Manager, Vendor, Admin).
+- **Dashboard** — Live KPIs, spend-trend and category charts, recent purchase orders, and top vendors.
+- **Vendor Management** — Create/edit/search/filter vendors with category, GST, contact details and status.
+- **RFQs** — Multi-step RFQ builder with dynamic line items and vendor assignment.
+- **Quotations & Smart Comparison** — Vendor quotation submission and a side-by-side comparison that recommends the best quote using a weighted price/delivery/rating score, with a savings insight.
+- **Approvals** — Multi-stage approval workflow with an action timeline, remarks, and state transitions.
+- **Purchase Orders** — Auto-numbered POs generated from approved quotations.
+- **Invoices** — Auto-numbered GST invoices (CGST + SGST) with PDF download, print, email, and payment status.
+- **Reports & Analytics** — Spend by category, monthly trends, top vendors, and CSV export.
+- **Activity Log** — A filterable audit trail of every action.
+- **Real-time** — Live updates across the app via Socket.io.
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React, Vite, Tailwind CSS, shadcn/ui, React Router, TanStack Query, React Hook Form + Zod, Recharts, Framer Motion |
+| Backend | Node.js, Express, Prisma ORM, SQLite, Socket.io |
+| Auth | JWT, bcrypt, role-based middleware |
+| Documents | @react-pdf/renderer (PDF), Nodemailer (email) |
+
+## Architecture
 
 ```
-1. Procurement Officer creates an RFQ
-2. Vendors receive invitations and submit quotations
-3. Procurement team compares quotations
-4. Approval workflow is initiated
-5. Approved quotations generate Purchase Orders
-6. Invoice is generated from the Purchase Order
-7. Invoice is printed or emailed directly
-8. Activities tracked through logs and analytics
+React (Vite SPA)
+   |  REST + WebSocket (Vite dev proxy)
+   v
+Express API  --->  Prisma ORM  --->  SQLite (local file)
+   |
+   +--> Socket.io (real-time events)
 ```
 
----
+The frontend is organized by feature module (one folder per ERP domain); the backend exposes a REST API per resource with Zod validation and JWT/role guards.
 
-## 🛠️ Tech Stack
+## Getting Started
 
-- **Frontend:** React + Vite · Tailwind CSS + shadcn/ui · React Router · TanStack Query · React Hook Form + Zod · Recharts · Framer Motion
-- **Backend:** Node.js + Express REST API
-- **Database:** SQLite (local, no install) via Prisma ORM
-- **Auth:** JWT + bcrypt, role-based access (4 roles)
-- **Real-time:** Socket.io
-- **Invoices:** `@react-pdf/renderer` (PDF) · Nodemailer (email)
-
----
-
-## 🚀 Getting Started
+Prerequisites: **Node.js >= 18** and **npm >= 9**. No database server needed (SQLite is bundled).
 
 ```bash
-# 1. Clone the repository
 git clone https://github.com/karm-tech/VendorBridge.git
 cd VendorBridge
-
-# 2. Install dependencies (also creates & seeds the local SQLite database)
-npm install
-
-# 3. Run the app (Express API + React frontend together)
-npm run dev
+npm install      # installs frontend + backend deps and seeds the local database
+npm run dev      # runs the API and web app together
 ```
 
-Open **http://localhost:5173** and sign in with the **1-click demo logins**. No database server or cloud account needed — everything runs locally. See [docs/SETUP.md](docs/SETUP.md) for details.
+Open **http://localhost:5173** and click **"Click here to open the demo"**.
 
----
+### Demo accounts
 
-## 📁 Project Structure
+All accounts use the password `demo1234`.
+
+| Role | Email |
+|------|-------|
+| Procurement Officer | officer@vendorbridge.app |
+| Manager | manager@vendorbridge.app |
+| Vendor | vendor@vendorbridge.app |
+| Admin | admin@vendorbridge.app |
+
+## Project Structure
 
 ```
 VendorBridge/
-├── src/         # React frontend (features, components, lib)
-├── server/      # Express + Prisma backend (routes, prisma/schema)
-├── docs/        # Documentation
-└── README.md
+├── src/                      React frontend
+│   ├── app/                  providers (auth, query)
+│   ├── components/           ui (shadcn), layout, common, brand
+│   ├── features/             one module per ERP domain
+│   │   ├── auth/ dashboard/ vendors/ rfq/ quotations/
+│   │   └── approvals/ purchase-orders/ invoices/ reports/ activity/ marketing/
+│   ├── constants/  lib/      nav/roles/org, api client, utils, realtime
+├── server/                   Express + Prisma backend
+│   ├── src/ routes/ middleware/ lib/
+│   └── prisma/ schema.prisma  seed.js
+└── docs/                     setup guide & screenshots
 ```
 
----
+## Scripts
 
-## 🎨 Mockups
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Run backend API + frontend together |
+| `npm run build` | Build the production bundle |
+| `npm run preview` | Preview the production build |
 
-Design reference: [Excalidraw Mockup](https://app.excalidraw.com/l/65VNwvy7c4X/5ywnm0v3qhK)
+## Releases
 
----
-
-## 👨‍💻 Team
-
-> _Add team members here._
-
----
-
-## 📄 License
-
-> _Add a license (e.g. MIT) if applicable._
+- **v1.0.0 — Foundation:** auth, design system, backend.
+- **v2.0.0 — Core ERP:** vendors, RFQs, quotations, approvals, purchase orders, invoices.
+- **v3.0.0 — Final:** reports, activity log, real-time, landing page.
 
 ---
 
-<p align="center"><i>Built for the Odoo Hackathon 🚀</i></p>
+<p align="center"><i>VendorBridge — Procurement & Vendor Management ERP</i></p>
