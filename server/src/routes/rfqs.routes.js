@@ -5,6 +5,7 @@ import { authenticate } from "../middleware/auth.js"
 import { requireRole } from "../middleware/requireRole.js"
 import { validate } from "../middleware/validate.js"
 import { emitEvent } from "../lib/socket.js"
+import { logActivity } from "../lib/activity.js"
 
 const router = Router()
 const WRITE_ROLES = ["admin", "procurement_officer", "manager"]
@@ -80,6 +81,13 @@ router.post("/", requireRole(...WRITE_ROLES), validate(rfqSchema), async (req, r
         invitations: { create: vendorIds.map((id) => ({ vendorId: id, status: "invited" })) },
       },
       include: { items: true, invitations: true },
+    })
+    await logActivity({
+      type: "rfq",
+      message: `RFQ '${rfq.title}' ${status === "open" ? "published to vendors" : "saved as draft"}`,
+      userId: req.user.id,
+      entityType: "rfq",
+      entityId: rfq.id,
     })
     emitEvent("rfq:created", { id: rfq.id, title: rfq.title })
     res.status(201).json({ rfq })

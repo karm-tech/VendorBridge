@@ -6,6 +6,7 @@ import { requireRole } from "../middleware/requireRole.js"
 import { validate } from "../middleware/validate.js"
 import { sendEmail } from "../lib/email.js"
 import { emitEvent } from "../lib/socket.js"
+import { logActivity } from "../lib/activity.js"
 
 const router = Router()
 const WRITE_ROLES = ["admin", "procurement_officer", "manager"]
@@ -83,6 +84,7 @@ router.post("/", requireRole(...WRITE_ROLES), validate(createSchema), async (req
       },
       include: { vendor: true },
     })
+    await logActivity({ type: "invoice", message: `Invoice ${invoice.invoiceNumber} generated`, userId: req.user.id, entityType: "invoice", entityId: invoice.id })
     emitEvent("invoice:created", { id: invoice.id, invoiceNumber })
     res.status(201).json({ invoice })
   } catch (err) {

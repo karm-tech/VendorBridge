@@ -4,6 +4,7 @@ import { prisma } from "../lib/prisma.js"
 import { authenticate } from "../middleware/auth.js"
 import { requireRole } from "../middleware/requireRole.js"
 import { validate } from "../middleware/validate.js"
+import { logActivity } from "../lib/activity.js"
 
 const router = Router()
 
@@ -55,6 +56,7 @@ router.get("/:id", async (req, res, next) => {
 router.post("/", requireRole(...WRITE_ROLES), validate(vendorSchema), async (req, res, next) => {
   try {
     const vendor = await prisma.vendor.create({ data: req.body })
+    await logActivity({ type: "vendor", message: `Vendor ${vendor.name} added`, userId: req.user.id, entityType: "vendor", entityId: vendor.id })
     res.status(201).json({ vendor })
   } catch (err) {
     next(err)

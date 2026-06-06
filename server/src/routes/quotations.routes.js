@@ -5,6 +5,7 @@ import { authenticate } from "../middleware/auth.js"
 import { requireRole } from "../middleware/requireRole.js"
 import { validate } from "../middleware/validate.js"
 import { emitEvent } from "../lib/socket.js"
+import { logActivity } from "../lib/activity.js"
 
 const router = Router()
 const SELECT_ROLES = ["admin", "procurement_officer", "manager"]
@@ -77,6 +78,7 @@ router.post("/", validate(quotationSchema), async (req, res, next) => {
     await prisma.rfqInvitation
       .updateMany({ where: { rfqId, vendorId }, data: { status: "responded" } })
       .catch(() => {})
+    await logActivity({ type: "quotation", message: `Quotation submitted by ${quotation.vendor.name}`, userId: req.user.id, entityType: "quotation", entityId: quotation.id })
     emitEvent("quotation:submitted", { rfqId, vendorId, total })
     res.status(201).json({ quotation })
   } catch (err) {
@@ -98,6 +100,7 @@ router.patch("/:id/select", requireRole(...SELECT_ROLES), async (req, res, next)
       await prisma.approval.create({ data: { quotationId: quotation.id, stage: 2, status: "pending" } })
     }
 
+    await logActivity({ type: "quotation", message: "Quotation selected for approval", userId: req.user.id, entityType: "quotation", entityId: selected.id })
     emitEvent("quotation:selected", { id: selected.id, rfqId: quotation.rfqId })
     res.json({ quotation: selected })
   } catch (err) {

@@ -5,6 +5,7 @@ import { authenticate } from "../middleware/auth.js"
 import { requireRole } from "../middleware/requireRole.js"
 import { validate } from "../middleware/validate.js"
 import { emitEvent } from "../lib/socket.js"
+import { logActivity } from "../lib/activity.js"
 
 const router = Router()
 const WRITE_ROLES = ["admin", "procurement_officer", "manager"]
@@ -75,6 +76,7 @@ router.post("/", requireRole(...WRITE_ROLES), validate(createSchema), async (req
       data: { poNumber, quotationId: quotation.id, vendorId: quotation.vendorId, status: "issued" },
       include: { vendor: true },
     })
+    await logActivity({ type: "po", message: `Purchase order ${po.poNumber} generated`, userId: req.user.id, entityType: "purchaseOrder", entityId: po.id })
     emitEvent("po:created", { id: po.id, poNumber })
     res.status(201).json({ purchaseOrder: po })
   } catch (err) {
