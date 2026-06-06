@@ -1,0 +1,36 @@
+VendorBridge — Requirements & Prerequisites
+===========================================
+Full-stack app that runs FULLY OFFLINE / LOCALLY:
+  Frontend : React (Vite) + Tailwind + shadcn/ui
+  Backend  : Node.js + Express REST API
+  Database : SQLite via Prisma ORM  (local file — NO database server to install)
+  Realtime : Socket.io
+  Auth     : JWT
+NPM dependencies install automatically with "npm install".
+
+SYSTEM REQUIREMENTS
+-------------------
+Node.js >= 18    (tested on Node 22.9)
+npm     >= 9     (ships with Node.js)
+A modern browser (Chrome, Edge, or Firefox)
+No separate database server required — SQLite is bundled.
+
+INSTALL & RUN  (one command runs API + web app)
+-----------------------------------------------
+npm install        # install deps + generate the local SQLite database with seed data
+npm run dev        # start backend API + frontend  -> http://localhost:5173
+npm run build      # production build
+npm run preview    # preview the production build
+
+KEY TECHNOLOGIES
+----------------
+Frontend: react, react-dom, react-router-dom, @tanstack/react-query,
+          react-hook-form, zod, recharts, framer-motion, lucide-react,
+          tailwindcss, shadcn/ui
+Backend : express, prisma + @prisma/client (SQLite), jsonwebtoken, bcryptjs,
+          socket.io, cors, zod, nodemailer
+
+OPTIONAL — real outgoing email (Nodemailer SMTP)
+------------------------------------------------
+Email sending is simulated by default. To send real emails, set SMTP_* values
+in server/.env (see .env.example).

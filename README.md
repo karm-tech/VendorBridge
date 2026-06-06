@@ -52,35 +52,30 @@ reducing manual procurement inefficiencies with structured workflows and real-ti
 
 ## 🛠️ Tech Stack
 
-> _To be finalized._ Fill in as the team decides.
-
-- **Frontend:** _TBD_
-- **Backend:** _TBD_
-- **Database:** _TBD_
-- **Auth:** _TBD_
-- **Other:** PDF generation, email service, etc.
+- **Frontend:** React + Vite · Tailwind CSS + shadcn/ui · React Router · TanStack Query · React Hook Form + Zod · Recharts · Framer Motion
+- **Backend:** Node.js + Express REST API
+- **Database:** SQLite (local, no install) via Prisma ORM
+- **Auth:** JWT + bcrypt, role-based access (4 roles)
+- **Real-time:** Socket.io
+- **Invoices:** `@react-pdf/renderer` (PDF) · Nodemailer (email)
 
 ---
 
 ## 🚀 Getting Started
-
-> _Update these steps once the stack is finalized._
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/karm-tech/VendorBridge.git
 cd VendorBridge
 
-# 2. Install dependencies
-# <install command>
+# 2. Install dependencies (also creates & seeds the local SQLite database)
+npm install
 
-# 3. Configure environment
-cp .env.example .env
-# fill in the required values
-
-# 4. Run the app
-# <run command>
+# 3. Run the app (Express API + React frontend together)
+npm run dev
 ```
+
+Open **http://localhost:5173** and sign in with the **1-click demo logins**. No database server or cloud account needed — everything runs locally. See [docs/SETUP.md](docs/SETUP.md) for details.
 
 ---
 
@@ -88,13 +83,11 @@ cp .env.example .env
 
 ```
 VendorBridge/
-├── (frontend)/      # UI application
-├── (backend)/       # API & business logic
-├── (docs)/          # Documentation & mockups
+├── src/         # React frontend (features, components, lib)
+├── server/      # Express + Prisma backend (routes, prisma/schema)
+├── docs/        # Documentation
 └── README.md
 ```
-
-> _Structure to be updated as the project takes shape._
 
 ---
 
