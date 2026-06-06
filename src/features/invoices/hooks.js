@@ -39,7 +39,11 @@ export function useUpdateInvoice() {
 }
 
 export function useEmailInvoice() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (id) => api(`/invoices/${id}/email`, { method: "POST" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["emails"] })
+    },
   })
 }

@@ -6,7 +6,7 @@ import { formatINR } from "@/lib/utils"
 const GRAIN =
   "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"
 
-export function HeroBanner({ name = "Karm", dateLabel, spend, deltaLabel }) {
+export function HeroBanner({ name = "Karm", dateLabel, spend, deltaLabel, canCreateRfq = true }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
@@ -45,12 +45,14 @@ export function HeroBanner({ name = "Karm", dateLabel, spend, deltaLabel }) {
             )}
           </div>
         </div>
-        <Link
-          to="/rfqs"
-          className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-primary shadow-sm transition hover:bg-white/90"
-        >
-          <Plus className="h-4 w-4" /> New RFQ
-        </Link>
+        {canCreateRfq && (
+          <Link
+            to="/rfqs/new"
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-primary shadow-sm transition hover:bg-white/90"
+          >
+            <Plus className="h-4 w-4" /> New RFQ
+          </Link>
+        )}
       </div>
     </motion.div>
   )

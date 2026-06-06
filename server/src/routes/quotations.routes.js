@@ -8,7 +8,8 @@ import { emitEvent } from "../lib/socket.js"
 import { logActivity } from "../lib/activity.js"
 
 const router = Router()
-const SELECT_ROLES = ["admin", "procurement_officer", "manager"]
+const SELECT_ROLES = ["admin", "procurement_officer"]
+const SUBMIT_ROLES = ["admin", "procurement_officer", "vendor"]
 
 const quotationSchema = z.object({
   rfqId: z.string().min(1, "RFQ is required"),
@@ -46,9 +47,12 @@ router.get("/", async (req, res, next) => {
   }
 })
 
-router.post("/", validate(quotationSchema), async (req, res, next) => {
+router.post("/", requireRole(...SUBMIT_ROLES), validate(quotationSchema), async (req, res, next) => {
   try {
     const { rfqId, vendorId, deliveryDays, paymentTerms, notes, taxRate, items } = req.body
+    const vendor = await prisma.vendor.findUnique({ where: { id: vendorId } })
+    if (!vendor) return res.status(404).json({ error: "Vendor not found" })
+    if (vendor.status === "blocked") return res.status(409).json({ error: "This vendor is blocked — please select another vendor" })
     const subtotal = items.reduce((sum, it) => sum + it.quantity * it.unitPrice, 0)
     const taxAmount = Math.round((subtotal * taxRate) / 100)
     const total = subtotal + taxAmount
@@ -88,8 +92,9 @@ router.post("/", validate(quotationSchema), async (req, res, next) => {
 
 router.patch("/:id/select", requireRole(...SELECT_ROLES), async (req, res, next) => {
   try {
-    const quotation = await prisma.quotation.findUnique({ where: { id: req.params.id } })
+    const quotation = await prisma.quotation.findUnique({ where: { id: req.params.id }, include: { vendor: true } })
     if (!quotation) return res.status(404).json({ error: "Quotation not found" })
+    if (quotation.vendor?.status === "blocked") return res.status(409).json({ error: "This vendor is blocked — please select another vendor" })
     await prisma.quotation.updateMany({ where: { rfqId: quotation.rfqId }, data: { status: "submitted" } })
     const selected = await prisma.quotation.update({ where: { id: quotation.id }, data: { status: "selected" } })
     await prisma.rfq.update({ where: { id: quotation.rfqId }, data: { status: "awarded" } }).catch(() => {})

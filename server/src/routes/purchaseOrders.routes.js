@@ -8,7 +8,7 @@ import { emitEvent } from "../lib/socket.js"
 import { logActivity } from "../lib/activity.js"
 
 const router = Router()
-const WRITE_ROLES = ["admin", "procurement_officer", "manager"]
+const WRITE_ROLES = ["admin", "procurement_officer"]
 
 router.use(authenticate)
 

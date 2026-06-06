@@ -8,7 +8,7 @@ import { emitEvent } from "../lib/socket.js"
 import { logActivity } from "../lib/activity.js"
 
 const router = Router()
-const WRITE_ROLES = ["admin", "procurement_officer", "manager"]
+const WRITE_ROLES = ["admin", "procurement_officer"]
 
 const rfqSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -56,7 +56,7 @@ router.get("/:id", async (req, res, next) => {
       include: {
         items: true,
         invitations: { include: { vendor: true } },
-        quotations: { include: { vendor: true } },
+        quotations: { include: { vendor: true, purchaseOrder: { include: { invoice: true } } } },
       },
     })
     if (!rfq) return res.status(404).json({ error: "RFQ not found" })
@@ -91,6 +91,39 @@ router.post("/", requireRole(...WRITE_ROLES), validate(rfqSchema), async (req, r
     })
     emitEvent("rfq:created", { id: rfq.id, title: rfq.title })
     res.status(201).json({ rfq })
+  } catch (err) {
+    next(err)
+  }
+})
+
+router.patch("/:id", requireRole(...WRITE_ROLES), validate(rfqSchema), async (req, res, next) => {
+  try {
+    const { title, category, description, deadline, status, items, vendorIds } = req.body
+    const existing = await prisma.rfq.findUnique({ where: { id: req.params.id } })
+    if (!existing) return res.status(404).json({ error: "RFQ not found" })
+    if (existing.status === "awarded") {
+      return res.status(409).json({ error: "This RFQ is locked — a quotation has already been confirmed" })
+    }
+
+    await prisma.rfqItem.deleteMany({ where: { rfqId: req.params.id } })
+    await prisma.rfqInvitation.deleteMany({ where: { rfqId: req.params.id } })
+
+    const rfq = await prisma.rfq.update({
+      where: { id: req.params.id },
+      data: {
+        title,
+        category,
+        description,
+        deadline: deadline ? new Date(deadline) : null,
+        status,
+        items: { create: items.map((it) => ({ name: it.name, quantity: it.quantity, unit: it.unit })) },
+        invitations: { create: vendorIds.map((id) => ({ vendorId: id, status: "invited" })) },
+      },
+      include: { items: true, invitations: true },
+    })
+    await logActivity({ type: "rfq", message: `RFQ '${rfq.title}' updated`, userId: req.user.id, entityType: "rfq", entityId: rfq.id })
+    emitEvent("rfq:updated", { id: rfq.id, title: rfq.title })
+    res.json({ rfq })
   } catch (err) {
     next(err)
   }

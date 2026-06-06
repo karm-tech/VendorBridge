@@ -10,6 +10,8 @@ import purchaseOrderRoutes from "./routes/purchaseOrders.routes.js"
 import invoiceRoutes from "./routes/invoices.routes.js"
 import reportRoutes from "./routes/reports.routes.js"
 import activityRoutes from "./routes/activity.routes.js"
+import emailRoutes from "./routes/emails.routes.js"
+import userRoutes from "./routes/users.routes.js"
 import { notFound, errorHandler } from "./middleware/error.js"
 
 export function createApp() {
@@ -28,6 +30,8 @@ export function createApp() {
   app.use("/api/invoices", invoiceRoutes)
   app.use("/api/reports", reportRoutes)
   app.use("/api/activity", activityRoutes)
+  app.use("/api/emails", emailRoutes)
+  app.use("/api/users", userRoutes)
 
   app.use("/api", notFound)
   app.use(errorHandler)

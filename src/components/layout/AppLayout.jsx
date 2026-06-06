@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Outlet } from "react-router-dom"
 import { SidebarNav } from "@/components/layout/Sidebar"
 import { Topbar } from "@/components/layout/Topbar"
+import { DemoBanner } from "@/components/layout/DemoBanner"
 import { useRealtime } from "@/lib/realtime"
 
 export function AppLayout() {
@@ -27,6 +28,7 @@ export function AppLayout() {
       )}
 
       <div className="lg:pl-64 print:pl-0">
+        <DemoBanner />
         <Topbar onMenuClick={() => setMobileOpen(true)} />
         <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="animate-fade-in">

@@ -8,7 +8,7 @@ import { emitEvent } from "../lib/socket.js"
 import { logActivity } from "../lib/activity.js"
 
 const router = Router()
-const DECIDE_ROLES = ["admin", "manager", "procurement_officer"]
+const DECIDE_ROLES = ["admin", "manager"]
 
 router.use(authenticate)
 
@@ -37,6 +37,7 @@ router.get("/:quotationId", async (req, res, next) => {
         vendor: true,
         items: true,
         rfq: true,
+        purchaseOrder: { include: { invoice: true } },
         approvals: {
           orderBy: { stage: "asc" },
           include: { approver: { select: { firstName: true, lastName: true } } },

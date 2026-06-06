@@ -171,3 +171,14 @@ model ActivityLog {
   entityId   String?
   createdAt  DateTime @default(now())
 }
+
+model EmailLog {
+  id          String   @id @default(cuid())
+  to          String
+  subject     String
+  body        String
+  status      String   @default("simulated")
+  relatedType String?
+  relatedId   String?
+  createdAt   DateTime @default(now())
+}

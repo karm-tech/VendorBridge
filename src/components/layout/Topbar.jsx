@@ -63,10 +63,10 @@ export function Topbar({ onMenuClick }) {
               {roleLabel && <div className="font-normal text-muted-foreground">{roleLabel}</div>}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/profile")}>
               <User className="h-4 w-4" /> Profile
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/settings")}>
               <Settings className="h-4 w-4" /> Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />

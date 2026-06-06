@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom"
-import { FileText, Plus } from "lucide-react"
+import { Link, useNavigate } from "react-router-dom"
+import { FileText, Plus, ChevronRight } from "lucide-react"
 import { PageHeader } from "@/components/common/PageHeader"
 import { EmptyState } from "@/components/common/EmptyState"
 import { StatusBadge } from "@/components/common/StatusBadge"
@@ -7,9 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useRfqs } from "@/features/rfq/hooks"
+import { useAuth } from "@/features/auth/AuthContext"
 import { formatDate } from "@/lib/utils"
 
 export function RfqsPage() {
+  const navigate = useNavigate()
+  const { can } = useAuth()
+  const canWrite = can("rfq:write")
   const { data: rfqs, isLoading, isError, error } = useRfqs()
 
   return (
@@ -18,11 +22,13 @@ export function RfqsPage() {
         title="Requests for Quotation"
         description="Create and track RFQs sent to your vendors."
       >
-        <Button asChild>
-          <Link to="/rfqs/new">
-            <Plus className="h-4 w-4" /> Create RFQ
-          </Link>
-        </Button>
+        {canWrite && (
+          <Button asChild>
+            <Link to="/rfqs/new">
+              <Plus className="h-4 w-4" /> Create RFQ
+            </Link>
+          </Button>
+        )}
       </PageHeader>
 
       <Card className="overflow-hidden p-0">
@@ -40,11 +46,13 @@ export function RfqsPage() {
             title="No RFQs yet"
             description="Create your first request for quotation to invite vendors."
             action={
-              <Button asChild>
-                <Link to="/rfqs/new">
-                  <Plus className="h-4 w-4" /> Create RFQ
-                </Link>
-              </Button>
+              canWrite ? (
+                <Button asChild>
+                  <Link to="/rfqs/new">
+                    <Plus className="h-4 w-4" /> Create RFQ
+                  </Link>
+                </Button>
+              ) : undefined
             }
             className="border-0 bg-transparent"
           />
@@ -59,11 +67,16 @@ export function RfqsPage() {
                   <th className="px-5 py-3 text-center font-semibold">Items</th>
                   <th className="px-5 py-3 text-center font-semibold">Quotations</th>
                   <th className="px-5 py-3 font-semibold">Status</th>
+                  <th className="px-5 py-3" />
                 </tr>
               </thead>
               <tbody>
                 {rfqs.map((r) => (
-                  <tr key={r.id} className="border-b border-border/60 transition-colors last:border-0 hover:bg-accent/40">
+                  <tr
+                    key={r.id}
+                    onClick={() => navigate(`/rfqs/${r.id}`)}
+                    className="cursor-pointer border-b border-border/60 transition-colors last:border-0 hover:bg-accent/40"
+                  >
                     <td className="px-5 py-3 font-medium text-foreground">{r.title}</td>
                     <td className="px-5 py-3 text-muted-foreground">{r.category || "—"}</td>
                     <td className="px-5 py-3 text-muted-foreground">{r.deadline ? formatDate(r.deadline) : "—"}</td>
@@ -71,6 +84,9 @@ export function RfqsPage() {
                     <td className="px-5 py-3 text-center font-num text-muted-foreground">{r._count.quotations}</td>
                     <td className="px-5 py-3">
                       <StatusBadge status={r.status} />
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
                     </td>
                   </tr>
                 ))}

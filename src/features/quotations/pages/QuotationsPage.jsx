@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { ScrollText, ArrowRight } from "lucide-react"
 import { PageHeader } from "@/components/common/PageHeader"
 import { EmptyState } from "@/components/common/EmptyState"
@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useRfqs } from "@/features/rfq/hooks"
 
 export function QuotationsPage() {
+  const navigate = useNavigate()
   const { data: rfqs, isLoading, isError, error } = useRfqs()
 
   return (
@@ -53,7 +54,11 @@ export function QuotationsPage() {
               </thead>
               <tbody>
                 {rfqs.map((r) => (
-                  <tr key={r.id} className="border-b border-border/60 transition-colors last:border-0 hover:bg-accent/40">
+                  <tr
+                    key={r.id}
+                    onClick={() => navigate(`/quotations/${r.id}`)}
+                    className="cursor-pointer border-b border-border/60 transition-colors last:border-0 hover:bg-accent/40"
+                  >
                     <td className="px-5 py-3 font-medium text-foreground">{r.title}</td>
                     <td className="px-5 py-3 text-center font-num text-muted-foreground">{r._count.invitations}</td>
                     <td className="px-5 py-3 text-center font-num text-muted-foreground">{r._count.quotations}</td>
@@ -61,11 +66,9 @@ export function QuotationsPage() {
                       <StatusBadge status={r.status} />
                     </td>
                     <td className="px-5 py-3 text-right">
-                      <Button variant="outline" size="sm" asChild>
-                        <Link to={`/quotations/${r.id}`}>
-                          Compare <ArrowRight className="h-3.5 w-3.5" />
-                        </Link>
-                      </Button>
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+                        Compare <ArrowRight className="h-3.5 w-3.5" />
+                      </span>
                     </td>
                   </tr>
                 ))}

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/features/auth/AuthContext"
-import { DEMO_PRIMARY, DEMO_PASSWORD } from "@/features/auth/demo"
+import { DEMO_ACCOUNTS, DEMO_PASSWORD } from "@/features/auth/demo"
 
 const highlights = [
   { icon: Workflow, text: "End-to-end procurement workflow in one place" },
@@ -129,29 +129,35 @@ export function LoginPage() {
             </Button>
           </form>
 
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             <div className="relative flex items-center">
               <div className="h-px flex-1 bg-border" />
-              <span className="px-3 text-xs text-muted-foreground">or</span>
+              <span className="px-3 text-center text-xs text-muted-foreground">or open a demo account</span>
               <div className="h-px flex-1 bg-border" />
             </div>
-            <Button
-              type="button"
-              variant="secondary"
-              className="w-full gap-2"
-              size="lg"
-              onClick={() => demoLogin(DEMO_PRIMARY.email)}
-              disabled={anyDemoLoading || isSubmitting}
-            >
-              {demoLoading === DEMO_PRIMARY.email ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Sparkles className="h-4 w-4 text-primary" />
-              )}
-              Click here to open the demo
-            </Button>
+            <div className="grid grid-cols-2 gap-2">
+              {DEMO_ACCOUNTS.map((acc) => (
+                <button
+                  key={acc.email}
+                  type="button"
+                  onClick={() => demoLogin(acc.email)}
+                  disabled={anyDemoLoading || isSubmitting}
+                  className="flex flex-col items-start gap-0.5 rounded-xl border border-border bg-card px-3 py-2.5 text-left transition-colors hover:border-primary/40 hover:bg-accent disabled:opacity-60"
+                >
+                  <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                    {demoLoading === acc.email ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-3.5 w-3.5 text-primary" />
+                    )}
+                    {acc.role}
+                  </span>
+                  <span className="text-[11px] leading-tight text-muted-foreground">{acc.desc}</span>
+                </button>
+              ))}
+            </div>
             <p className="text-center text-xs text-muted-foreground">
-              Loads the app with sample data — no signup needed
+              These are <span className="font-medium text-foreground">demo accounts</span> preloaded with sample data — nothing here affects a real system. One click, no signup. Admin sees everything.
             </p>
           </div>
 

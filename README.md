@@ -13,6 +13,7 @@ RFQs to Quotation Comparison to Approvals to Purchase Orders to GST Invoicing �
 
 - **Live link:** _add your Vercel URL here_
 - On the login screen, click **"Click here to open the demo"** — it signs in with sample data, no setup required.
+- **New here? Read the [User Guide](docs/USER_GUIDE.md)** for a step-by-step walkthrough.
 
 ## Screenshots
 
@@ -42,6 +43,28 @@ RFQs to Quotation Comparison to Approvals to Purchase Orders to GST Invoicing �
 - **Reports & Analytics** — Spend by category, monthly trends, top vendors, and CSV export.
 - **Activity Log** — A filterable audit trail of every action.
 - **Real-time** — Live updates across the app via Socket.io.
+
+## How It Works
+
+VendorBridge follows the full procurement lifecycle — each step unlocks the next:
+
+```
+ Vendor  ──▶  RFQ  ──▶  Quotations  ──▶  Compare & Select  ──▶  Approve  ──▶  Purchase Order  ──▶  Invoice
+            (invite       (vendors          (best-quote          (multi-       (auto PO#)          (GST, PDF,
+            vendors)      submit)           scoring)             stage)                            print, email)
+```
+
+1. **Register vendors** with GST, category and contact details.
+2. **Create an RFQ** with line items and invite vendors.
+3. **Vendors submit quotations** (pricing, delivery, terms).
+4. **Compare quotations** side by side — the best quote is recommended with a savings insight — and **select** one.
+5. **Approve** the selected quotation through a multi-stage workflow.
+6. **Generate a Purchase Order** from the approved quotation.
+7. **Generate a GST invoice** (CGST + SGST) and download, print, email or mark it paid.
+8. **Track** everything via the dashboard, reports and activity log — updated in real time.
+
+> Rule: a quotation must be **approved** (not just selected) before a Purchase Order can be generated.
+> Full walkthrough: **[docs/USER_GUIDE.md](docs/USER_GUIDE.md)**.
 
 ## Tech Stack
 
