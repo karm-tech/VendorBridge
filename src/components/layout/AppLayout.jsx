@@ -8,7 +8,7 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen bg-background">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-border lg:block">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-border lg:block print:hidden">
         <SidebarNav />
       </aside>
 
@@ -24,7 +24,7 @@ export function AppLayout() {
         </div>
       )}
 
-      <div className="lg:pl-64">
+      <div className="lg:pl-64 print:pl-0">
         <Topbar onMenuClick={() => setMobileOpen(true)} />
         <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="animate-fade-in">
