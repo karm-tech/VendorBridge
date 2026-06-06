@@ -7,6 +7,7 @@ import { RegisterPage } from "@/features/auth/pages/RegisterPage"
 import { DashboardPage } from "@/features/dashboard/pages/DashboardPage"
 import { VendorsPage } from "@/features/vendors/pages/VendorsPage"
 import { RfqsPage } from "@/features/rfq/pages/RfqsPage"
+import { CreateRfqPage } from "@/features/rfq/pages/CreateRfqPage"
 import { QuotationsPage } from "@/features/quotations/pages/QuotationsPage"
 import { ApprovalsPage } from "@/features/approvals/pages/ApprovalsPage"
 import { PurchaseOrdersPage } from "@/features/purchase-orders/pages/PurchaseOrdersPage"
@@ -26,6 +27,7 @@ export function App() {
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/vendors" element={<VendorsPage />} />
               <Route path="/rfqs" element={<RfqsPage />} />
+              <Route path="/rfqs/new" element={<CreateRfqPage />} />
               <Route path="/quotations" element={<QuotationsPage />} />
               <Route path="/approvals" element={<ApprovalsPage />} />
               <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />

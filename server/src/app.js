@@ -3,6 +3,7 @@ import cors from "cors"
 import authRoutes from "./routes/auth.routes.js"
 import healthRoutes from "./routes/health.routes.js"
 import vendorRoutes from "./routes/vendors.routes.js"
+import rfqRoutes from "./routes/rfqs.routes.js"
 import { notFound, errorHandler } from "./middleware/error.js"
 
 export function createApp() {
@@ -14,6 +15,7 @@ export function createApp() {
   app.use("/api/health", healthRoutes)
   app.use("/api/auth", authRoutes)
   app.use("/api/vendors", vendorRoutes)
+  app.use("/api/rfqs", rfqRoutes)
 
   app.use("/api", notFound)
   app.use(errorHandler)

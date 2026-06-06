@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/features/auth/AuthContext"
-import { DEMO_PRIMARY, DEMO_ROLES, DEMO_PASSWORD } from "@/features/auth/demo"
+import { DEMO_PRIMARY, DEMO_PASSWORD } from "@/features/auth/demo"
 
 const highlights = [
   { icon: Workflow, text: "End-to-end procurement workflow in one place" },
@@ -129,10 +129,10 @@ export function LoginPage() {
             </Button>
           </form>
 
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             <div className="relative flex items-center">
               <div className="h-px flex-1 bg-border" />
-              <span className="px-3 text-xs text-muted-foreground">or try a live demo</span>
+              <span className="px-3 text-xs text-muted-foreground">or</span>
               <div className="h-px flex-1 bg-border" />
             </div>
             <Button
@@ -148,22 +148,11 @@ export function LoginPage() {
               ) : (
                 <Sparkles className="h-4 w-4 text-primary" />
               )}
-              Explore the live demo
+              Click here to open the demo
             </Button>
-            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-              <span>or as</span>
-              {DEMO_ROLES.map((acc) => (
-                <button
-                  key={acc.email}
-                  type="button"
-                  onClick={() => demoLogin(acc.email)}
-                  disabled={anyDemoLoading || isSubmitting}
-                  className="rounded-md px-2 py-1 font-medium text-primary transition-colors hover:bg-accent disabled:opacity-50"
-                >
-                  {demoLoading === acc.email ? "..." : acc.role}
-                </button>
-              ))}
-            </div>
+            <p className="text-center text-xs text-muted-foreground">
+              Loads the app with sample data — no signup needed
+            </p>
           </div>
 
           <p className="text-center text-sm text-muted-foreground">
