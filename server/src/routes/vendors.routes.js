@@ -8,7 +8,7 @@ import { logActivity } from "../lib/activity.js"
 
 const router = Router()
 
-const WRITE_ROLES = ["admin", "procurement_officer", "manager"]
+const WRITE_ROLES = ["admin", "procurement_officer"]
 
 const vendorSchema = z.object({
   name: z.string().min(1, "Name is required"),

@@ -14,12 +14,18 @@ import {
   useGeneratePurchaseOrder,
 } from "@/features/purchase-orders/hooks"
 import { useGenerateInvoice } from "@/features/invoices/hooks"
+import { useAuth } from "@/features/auth/AuthContext"
+import { ROLES } from "@/constants/roles"
 
 const selectClass =
   "flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
 
 export function PurchaseOrdersPage() {
   const navigate = useNavigate()
+  const { user, can } = useAuth()
+  const canPO = can("po:write")
+  const canInvoice = can("invoice:write")
+  const isStaff = user && [ROLES.OFFICER, ROLES.MANAGER, ROLES.ADMIN].includes(user.role)
   const { data: pos, isLoading } = usePurchaseOrders()
   const { data: available } = useAvailableQuotations()
   const genPO = useGeneratePurchaseOrder()
@@ -47,7 +53,7 @@ export function PurchaseOrdersPage() {
     <div className="space-y-6">
       <PageHeader title="Purchase Orders" description="Generate purchase orders from approved quotations." />
 
-      {available && available.length > 0 && (
+      {canPO && available && available.length > 0 && (
         <Card className="flex flex-col gap-3 p-5 sm:flex-row sm:items-end">
           <div className="flex-1 space-y-1.5">
             <label htmlFor="po-quote" className="text-sm font-medium text-foreground">
@@ -104,16 +110,22 @@ export function PurchaseOrdersPage() {
                     <td className="px-5 py-3 text-muted-foreground">{formatDate(po.poDate)}</td>
                     <td className="px-5 py-3 text-right">
                       {po.invoice ? (
-                        <Button variant="outline" size="sm" asChild>
-                          <Link to={`/invoices/${po.invoice.id}`}>
-                            <FileText className="h-3.5 w-3.5" /> View invoice
-                          </Link>
-                        </Button>
-                      ) : (
+                        isStaff ? (
+                          <Button variant="outline" size="sm" asChild>
+                            <Link to={`/invoices/${po.invoice.id}`}>
+                              <FileText className="h-3.5 w-3.5" /> View invoice
+                            </Link>
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Invoiced</span>
+                        )
+                      ) : canInvoice ? (
                         <Button size="sm" onClick={() => createInvoice(po.id)} disabled={busyPo === po.id}>
                           {busyPo === po.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
                           Create invoice
                         </Button>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
                       )}
                     </td>
                   </tr>

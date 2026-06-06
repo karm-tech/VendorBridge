@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link, useParams } from "react-router-dom"
-import { ArrowLeft, Plus, Sparkles, CheckCircle2, Loader2, ScrollText } from "lucide-react"
+import { ArrowLeft, ArrowRight, Plus, Sparkles, CheckCircle2, Loader2, ScrollText } from "lucide-react"
 import { PageHeader } from "@/components/common/PageHeader"
 import { EmptyState } from "@/components/common/EmptyState"
 import { Button } from "@/components/ui/button"
@@ -8,9 +8,12 @@ import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn, formatINR } from "@/lib/utils"
 import { useRfq } from "@/features/rfq/hooks"
+import { rfqStage, PIPELINE_STAGES } from "@/features/rfq/stage"
+import { StageTracker } from "@/components/common/StageTracker"
 import { useQuotations, useSelectQuotation } from "@/features/quotations/hooks"
 import { scoreQuotations } from "@/features/quotations/scoring"
 import { SubmitQuotationDialog } from "@/features/quotations/components/SubmitQuotationDialog"
+import { useAuth } from "@/features/auth/AuthContext"
 
 function Row({ label, scored, render, emphasize }) {
   return (
@@ -47,10 +50,14 @@ export function ComparisonPage() {
   const { data: rfq } = useRfq(rfqId)
   const { data: quotations, isLoading } = useQuotations(rfqId)
   const select = useSelectQuotation()
+  const { can } = useAuth()
+  const canSubmit = can("quotation:submit")
+  const canSelect = can("quotation:select")
   const [dialogOpen, setDialogOpen] = useState(false)
 
   const scored = scoreQuotations(quotations || [])
   const recommended = scored.find((q) => q.recommended)
+  const selectedQuote = scored.find((q) => q.status === "selected")
 
   return (
     <div className="space-y-6">
@@ -59,11 +66,32 @@ export function ComparisonPage() {
           <ArrowLeft className="h-4 w-4" /> Back to quotations
         </Link>
         <PageHeader title="Quotation Comparison" description={rfq?.title || "Compare vendor quotations side by side"}>
-          <Button onClick={() => setDialogOpen(true)}>
-            <Plus className="h-4 w-4" /> Submit quotation
-          </Button>
+          {canSubmit && (
+            <Button onClick={() => setDialogOpen(true)}>
+              <Plus className="h-4 w-4" /> Submit quotation
+            </Button>
+          )}
         </PageHeader>
       </div>
+
+      {rfq && (
+        <Card className="p-5">
+          <StageTracker stages={PIPELINE_STAGES} current={rfqStage(rfq)} />
+        </Card>
+      )}
+
+      {selectedQuote && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-accent px-4 py-3">
+          <p className="text-sm text-foreground">
+            <span className="font-medium">{selectedQuote.vendor.name}</span> is selected — proceed to approval.
+          </p>
+          <Button asChild size="sm">
+            <Link to={`/approvals/${selectedQuote.id}`}>
+              Go to approval <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      )}
 
       {isLoading ? (
         <Skeleton className="h-72 w-full rounded-xl" />
@@ -73,9 +101,11 @@ export function ComparisonPage() {
           title="No quotations yet"
           description="Submit the first quotation for this RFQ to start comparing."
           action={
-            <Button onClick={() => setDialogOpen(true)}>
-              <Plus className="h-4 w-4" /> Submit quotation
-            </Button>
+            canSubmit ? (
+              <Button onClick={() => setDialogOpen(true)}>
+                <Plus className="h-4 w-4" /> Submit quotation
+              </Button>
+            ) : undefined
           }
         />
       ) : (
@@ -124,7 +154,7 @@ export function ComparisonPage() {
                         <Button size="sm" variant="secondary" disabled className="gap-1">
                           <CheckCircle2 className="h-4 w-4" /> Selected
                         </Button>
-                      ) : (
+                      ) : canSelect ? (
                         <Button
                           size="sm"
                           variant={q.recommended ? "default" : "outline"}
@@ -134,7 +164,7 @@ export function ComparisonPage() {
                           {select.isPending && select.variables === q.id && <Loader2 className="h-4 w-4 animate-spin" />}
                           Select
                         </Button>
-                      )}
+                      ) : null}
                     </td>
                   ))}
                 </tr>

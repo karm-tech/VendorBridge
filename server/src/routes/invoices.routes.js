@@ -9,7 +9,7 @@ import { emitEvent } from "../lib/socket.js"
 import { logActivity } from "../lib/activity.js"
 
 const router = Router()
-const WRITE_ROLES = ["admin", "procurement_officer", "manager"]
+const WRITE_ROLES = ["admin", "procurement_officer"]
 
 router.use(authenticate)
 
@@ -113,6 +113,8 @@ router.post("/:id/email", requireRole(...WRITE_ROLES), async (req, res, next) =>
       to,
       subject: `Invoice ${invoice.invoiceNumber} from VendorBridge`,
       text: `Dear ${invoice.vendor.name},\n\nPlease find invoice ${invoice.invoiceNumber} for a total of INR ${invoice.total}.\nDue date: ${invoice.dueDate ? invoice.dueDate.toDateString() : "N/A"}.\n\nRegards,\nVendorBridge`,
+      relatedType: "invoice",
+      relatedId: invoice.id,
     })
     emitEvent("invoice:emailed", { id: invoice.id })
     res.json({ ok: true, to, simulated: result.simulated })

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Building2, Plus, Search, Pencil } from "lucide-react"
+import { Building2, Plus, Search, Pencil, Trash2 } from "lucide-react"
 import { PageHeader } from "@/components/common/PageHeader"
 import { EmptyState } from "@/components/common/EmptyState"
 import { StatusBadge } from "@/components/common/StatusBadge"
@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { VendorFormDialog } from "@/features/vendors/components/VendorFormDialog"
-import { useVendors } from "@/features/vendors/hooks"
+import { useVendors, useDeleteVendor } from "@/features/vendors/hooks"
+import { useAuth } from "@/features/auth/AuthContext"
 import { VENDOR_STATUSES } from "@/features/vendors/constants"
 
 export function VendorsPage() {
@@ -15,6 +16,10 @@ export function VendorsPage() {
   const [status, setStatus] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState(null)
+  const { can } = useAuth()
+  const canWrite = can("vendor:write")
+  const canDelete = can("vendor:delete")
+  const remove = useDeleteVendor()
 
   const { data: vendors, isLoading, isError, error } = useVendors({ search, status })
 
@@ -28,15 +33,23 @@ export function VendorsPage() {
     setDialogOpen(true)
   }
 
+  function handleDelete(vendor) {
+    if (window.confirm(`Delete ${vendor.name}? This cannot be undone.`)) {
+      remove.mutate(vendor.id)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Vendors"
         description="Manage supplier profiles, categories, GST and contact details."
       >
-        <Button onClick={openAdd}>
-          <Plus className="h-4 w-4" /> Add Vendor
-        </Button>
+        {canWrite && (
+          <Button onClick={openAdd}>
+            <Plus className="h-4 w-4" /> Add Vendor
+          </Button>
+        )}
       </PageHeader>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -78,9 +91,11 @@ export function VendorsPage() {
             title="No vendors found"
             description="Add your first supplier, or adjust your search and filters."
             action={
-              <Button onClick={openAdd}>
-                <Plus className="h-4 w-4" /> Add Vendor
-              </Button>
+              canWrite ? (
+                <Button onClick={openAdd}>
+                  <Plus className="h-4 w-4" /> Add Vendor
+                </Button>
+              ) : undefined
             }
             className="border-0 bg-transparent"
           />
@@ -107,10 +122,26 @@ export function VendorsPage() {
                     <td className="px-5 py-3">
                       <StatusBadge status={v.status} />
                     </td>
-                    <td className="px-5 py-3 text-right">
-                      <Button variant="ghost" size="sm" onClick={() => openEdit(v)}>
-                        <Pencil className="h-3.5 w-3.5" /> Edit
-                      </Button>
+                    <td className="px-5 py-3">
+                      <div className="flex justify-end gap-1">
+                        {canWrite && (
+                          <Button variant="ghost" size="sm" onClick={() => openEdit(v)}>
+                            <Pencil className="h-3.5 w-3.5" /> Edit
+                          </Button>
+                        )}
+                        {canDelete && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            disabled={remove.isPending}
+                            onClick={() => handleDelete(v)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" /> Delete
+                          </Button>
+                        )}
+                        {!canWrite && !canDelete && <span className="text-xs text-muted-foreground">—</span>}
+                      </div>
                     </td>
                   </tr>
                 ))}

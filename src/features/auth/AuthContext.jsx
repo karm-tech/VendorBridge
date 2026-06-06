@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import { api, getToken, setToken } from "@/lib/api"
+import { can as hasPermission } from "@/constants/roles"
 
 const AuthContext = createContext(null)
 
@@ -38,8 +39,12 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
+  function can(action) {
+    return hasPermission(user?.role, action)
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, can }}>
       {children}
     </AuthContext.Provider>
   )

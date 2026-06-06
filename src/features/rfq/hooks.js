@@ -26,3 +26,14 @@ export function useCreateRfq() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["rfqs"] }),
   })
 }
+
+export function useUpdateRfq() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }) => api(`/rfqs/${id}`, { method: "PATCH", body: data }),
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["rfqs"] })
+      queryClient.invalidateQueries({ queryKey: ["rfq", vars.id] })
+    },
+  })
+}

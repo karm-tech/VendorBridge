@@ -9,11 +9,13 @@ import { SpendTrendChart } from "@/features/dashboard/components/SpendTrendChart
 import { CategoryDonut } from "@/features/dashboard/components/CategoryDonut"
 import { useReportSummary } from "@/features/reports/hooks"
 import { usePurchaseOrders } from "@/features/purchase-orders/hooks"
+import { useAuth } from "@/features/auth/AuthContext"
 import { formatINR } from "@/lib/utils"
 
 export function DashboardPage() {
   const { data: summary, isLoading } = useReportSummary()
   const { data: pos } = usePurchaseOrders()
+  const { user, can } = useAuth()
 
   if (isLoading || !summary) {
     return (
@@ -39,9 +41,11 @@ export function DashboardPage() {
   return (
     <div className="space-y-5">
       <HeroBanner
+        name={user?.firstName || "there"}
         dateLabel="Today"
         spend={summary.totalSpend}
         deltaLabel={`${deltaPct >= 0 ? "+" : ""}${deltaPct}% vs last month`}
+        canCreateRfq={can("rfq:write")}
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

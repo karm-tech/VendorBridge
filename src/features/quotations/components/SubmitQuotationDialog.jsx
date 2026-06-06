@@ -13,13 +13,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { formatINR } from "@/lib/utils"
 import { useSubmitQuotation } from "@/features/quotations/hooks"
+import { useVendors } from "@/features/vendors/hooks"
 
 const selectClass =
   "flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
 
 export function SubmitQuotationDialog({ open, onOpenChange, rfq }) {
   const submit = useSubmitQuotation()
-  const vendors = rfq?.invitations?.map((i) => i.vendor) || []
+  const { data: vendorList } = useVendors({})
+  const vendors = vendorList || []
   const items = rfq?.items || []
 
   const [vendorId, setVendorId] = useState("")
@@ -31,7 +33,7 @@ export function SubmitQuotationDialog({ open, onOpenChange, rfq }) {
 
   useEffect(() => {
     if (!open) return
-    setVendorId(vendors[0]?.id || "")
+    setVendorId("")
     setDelivery(7)
     setTerms("30 days net")
     setTaxRate(18)
@@ -47,10 +49,14 @@ export function SubmitQuotationDialog({ open, onOpenChange, rfq }) {
   const tax = Math.round((subtotal * (Number(taxRate) || 0)) / 100)
   const total = subtotal + tax
 
+  const selectedVendor = vendors.find((v) => v.id === vendorId)
+  const vendorBlocked = selectedVendor?.status === "blocked"
+
   async function handleSubmit(e) {
     e.preventDefault()
     setError("")
     if (!vendorId) return setError("Select a vendor")
+    if (vendorBlocked) return setError("This vendor is blocked — please select another vendor")
     if (items.some((it) => !(Number(prices[it.id]) > 0))) return setError("Enter a unit price for every item")
     try {
       await submit.mutateAsync({
@@ -90,9 +96,16 @@ export function SubmitQuotationDialog({ open, onOpenChange, rfq }) {
               {vendors.map((v) => (
                 <option key={v.id} value={v.id}>
                   {v.name}
+                  {v.status === "blocked" ? " — Blocked" : ""}
                 </option>
               ))}
             </select>
+            {vendorBlocked && (
+              <p className="flex items-center gap-1.5 text-sm text-destructive">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                This vendor is blocked — please select another vendor.
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -153,7 +166,7 @@ export function SubmitQuotationDialog({ open, onOpenChange, rfq }) {
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={submit.isPending}>
+            <Button type="submit" disabled={submit.isPending || vendorBlocked}>
               {submit.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               Submit quotation
             </Button>

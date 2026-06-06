@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { useEffect, useState } from "react"
+import { Link, useNavigate, useParams } from "react-router-dom"
 import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils"
 import { VENDOR_CATEGORIES } from "@/features/vendors/constants"
 import { useVendors } from "@/features/vendors/hooks"
 import { RFQ_UNITS } from "@/features/rfq/constants"
-import { useCreateRfq } from "@/features/rfq/hooks"
+import { useCreateRfq, useUpdateRfq, useRfq } from "@/features/rfq/hooks"
 
 const selectClass =
   "flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -37,8 +37,12 @@ const schema = z.object({
 })
 
 export function CreateRfqPage() {
+  const { id: rfqId } = useParams()
+  const isEdit = Boolean(rfqId)
   const navigate = useNavigate()
   const create = useCreateRfq()
+  const update = useUpdateRfq()
+  const { data: existing } = useRfq(rfqId)
   const { data: vendors, isLoading: vendorsLoading } = useVendors({})
   const [selected, setSelected] = useState([])
   const [formError, setFormError] = useState("")
@@ -47,12 +51,35 @@ export function CreateRfqPage() {
     register,
     control,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
     defaultValues: { title: "", category: "", deadline: "", description: "", items: [{ name: "", quantity: 1, unit: "NOS" }] },
   })
   const { fields, append, remove } = useFieldArray({ control, name: "items" })
+
+  useEffect(() => {
+    if (!existing) return
+    reset({
+      title: existing.title || "",
+      category: existing.category || "",
+      deadline: existing.deadline ? new Date(existing.deadline).toISOString().slice(0, 10) : "",
+      description: existing.description || "",
+      items: existing.items.length
+        ? existing.items.map((it) => ({ name: it.name, quantity: it.quantity, unit: it.unit }))
+        : [{ name: "", quantity: 1, unit: "NOS" }],
+    })
+    setSelected(existing.invitations.map((i) => i.vendorId))
+  }, [existing, reset])
+
+  useEffect(() => {
+    if (isEdit && existing && existing.status !== "open" && existing.status !== "draft") {
+      navigate(`/rfqs/${rfqId}`, { replace: true })
+    }
+  }, [existing, isEdit, rfqId, navigate])
+
+  const busy = create.isPending || update.isPending
 
   function toggleVendor(id) {
     setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
@@ -61,8 +88,13 @@ export function CreateRfqPage() {
   async function submit(values, status) {
     setFormError("")
     try {
-      await create.mutateAsync({ ...values, status, vendorIds: selected })
-      navigate("/rfqs")
+      if (isEdit) {
+        await update.mutateAsync({ id: rfqId, data: { ...values, status, vendorIds: selected } })
+        navigate(`/rfqs/${rfqId}`)
+      } else {
+        await create.mutateAsync({ ...values, status, vendorIds: selected })
+        navigate("/rfqs")
+      }
     } catch (err) {
       setFormError(err.message)
     }
@@ -71,10 +103,16 @@ export function CreateRfqPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link to="/rfqs" className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Back to RFQs
+        <Link
+          to={isEdit ? `/rfqs/${rfqId}` : "/rfqs"}
+          className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to {isEdit ? "RFQ" : "RFQs"}
         </Link>
-        <PageHeader title="Create RFQ" description="Request quotations from your vendors." />
+        <PageHeader
+          title={isEdit ? "Edit RFQ" : "Create RFQ"}
+          description={isEdit ? "Update this request for quotation." : "Request quotations from your vendors."}
+        />
       </div>
 
       {formError && (
@@ -182,13 +220,26 @@ export function CreateRfqPage() {
         </Card>
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button type="button" variant="outline" onClick={handleSubmit((v) => submit(v, "draft"))} disabled={create.isPending}>
-            Save as Draft
-          </Button>
-          <Button type="button" onClick={handleSubmit((v) => submit(v, "open"))} disabled={create.isPending}>
-            {create.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            Send to Vendors
-          </Button>
+          {isEdit ? (
+            <Button
+              type="button"
+              onClick={handleSubmit((v) => submit(v, existing?.status === "draft" ? "draft" : "open"))}
+              disabled={busy}
+            >
+              {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+              Save changes
+            </Button>
+          ) : (
+            <>
+              <Button type="button" variant="outline" onClick={handleSubmit((v) => submit(v, "draft"))} disabled={busy}>
+                Save as Draft
+              </Button>
+              <Button type="button" onClick={handleSubmit((v) => submit(v, "open"))} disabled={busy}>
+                {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+                Send to Vendors
+              </Button>
+            </>
+          )}
         </div>
       </form>
     </div>

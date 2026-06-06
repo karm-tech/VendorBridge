@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client"
 const prisma = new PrismaClient()
 
 async function clearAll() {
+  await prisma.emailLog.deleteMany()
   await prisma.activityLog.deleteMany()
   await prisma.invoiceItem.deleteMany()
   await prisma.invoice.deleteMany()
@@ -91,7 +92,7 @@ async function main() {
       category: "Furniture",
       description: "Ergonomic chairs and standing desks for the 3rd floor.",
       deadline: new Date("2025-06-15"),
-      status: "open",
+      status: "awarded",
       createdById: officer.id,
       items: {
         create: [
@@ -104,6 +105,29 @@ async function main() {
           { vendorId: infra.id, status: "responded" },
           { vendorId: techcore.id, status: "responded" },
           { vendorId: officeplus.id, status: "responded" },
+        ],
+      },
+    },
+  })
+
+  await prisma.rfq.create({
+    data: {
+      title: "Stationery Restock Q3",
+      category: "Stationery",
+      description: "Quarterly stationery and pantry supplies for all floors.",
+      deadline: new Date("2025-09-15"),
+      status: "open",
+      createdById: officer.id,
+      items: {
+        create: [
+          { name: "A4 Paper (ream)", quantity: 100, unit: "Box" },
+          { name: "Ballpoint Pens", quantity: 200, unit: "NOS" },
+        ],
+      },
+      invitations: {
+        create: [
+          { vendorId: officeplus.id, status: "invited" },
+          { vendorId: infra.id, status: "invited" },
         ],
       },
     },
@@ -177,7 +201,7 @@ async function main() {
   const sgst = Math.round(subtotal * 0.09)
   const total = subtotal + cgst + sgst
   const selectedItems = await prisma.quotationItem.findMany({ where: { quotationId: selected.id } })
-  await prisma.invoice.create({
+  const mainInvoice = await prisma.invoice.create({
     data: {
       invoiceNumber: "INV-2025-0042",
       purchaseOrderId: po.id,
@@ -272,9 +296,100 @@ async function main() {
     seq++
   }
 
-  console.log(
-    `Seed complete: 4 vendors, 4 users, ${quotations.length} quotations, ${history.length + 1} POs, ${history.length + 1} invoices`
-  )
+  await prisma.rfq.create({
+    data: {
+      title: "IT Peripherals Procurement",
+      category: "IT Hardware",
+      description: "Keyboards, mice and webcams for new hires.",
+      status: "draft",
+      createdById: officer.id,
+      deadline: new Date("2025-10-10"),
+      items: { create: [{ name: "Keyboard", quantity: 50, unit: "NOS" }, { name: "Mouse", quantity: 50, unit: "NOS" }] },
+    },
+  })
+
+  const chairsRfq = await prisma.rfq.create({
+    data: {
+      title: "Office Chairs Bulk Order",
+      category: "Furniture",
+      description: "Bulk ergonomic chairs for the new wing.",
+      status: "open",
+      createdById: officer.id,
+      deadline: new Date("2025-08-20"),
+      items: { create: [{ name: "Ergonomic chair", quantity: 40, unit: "NOS" }] },
+      invitations: { create: [{ vendorId: infra.id, status: "responded" }, { vendorId: officeplus.id, status: "responded" }] },
+    },
+  })
+  for (const [vendorId, price] of [[infra.id, 3600], [officeplus.id, 3450]]) {
+    const sub = 40 * price
+    const tax = Math.round(sub * 0.18)
+    await prisma.quotation.create({
+      data: {
+        rfqId: chairsRfq.id, vendorId, deliveryDays: 12, taxRate: 18, subtotal: sub, taxAmount: tax, total: sub + tax, status: "submitted",
+        items: { create: [{ name: "Ergonomic chair", quantity: 40, unitPrice: price, total: sub }] },
+      },
+    })
+  }
+
+  const confRfq = await prisma.rfq.create({
+    data: {
+      title: "Conference Room AV Setup",
+      category: "IT Hardware",
+      description: "Projectors and screens for meeting rooms.",
+      status: "awarded",
+      createdById: officer.id,
+      deadline: new Date("2025-08-01"),
+      items: { create: [{ name: "Projector", quantity: 3, unit: "NOS" }] },
+      invitations: { create: [{ vendorId: techcore.id, status: "responded" }, { vendorId: infra.id, status: "responded" }] },
+    },
+  })
+  const confSelected = await prisma.quotation.create({
+    data: {
+      rfqId: confRfq.id, vendorId: techcore.id, deliveryDays: 14, taxRate: 18, subtotal: 165000, taxAmount: 29700, total: 194700, status: "selected",
+      items: { create: [{ name: "Projector", quantity: 3, unitPrice: 55000, total: 165000 }] },
+    },
+  })
+  await prisma.quotation.create({
+    data: {
+      rfqId: confRfq.id, vendorId: infra.id, deliveryDays: 18, taxRate: 18, subtotal: 171000, taxAmount: 30780, total: 201780, status: "submitted",
+      items: { create: [{ name: "Projector", quantity: 3, unitPrice: 57000, total: 171000 }] },
+    },
+  })
+  await prisma.approval.create({ data: { quotationId: confSelected.id, stage: 1, status: "approved", remarks: "Within budget.", approverId: officer.id, decidedAt: new Date("2025-07-25T11:00:00") } })
+  await prisma.approval.create({ data: { quotationId: confSelected.id, stage: 2, status: "pending", approverId: manager.id } })
+
+  const rackRfq = await prisma.rfq.create({
+    data: {
+      title: "Warehouse Storage Racks",
+      category: "Logistics",
+      description: "Heavy-duty storage racks for the warehouse.",
+      status: "awarded",
+      createdById: officer.id,
+      deadline: new Date("2025-07-15"),
+      items: { create: [{ name: "Storage rack", quantity: 20, unit: "NOS" }] },
+      invitations: { create: [{ vendorId: fastlog.id, status: "responded" }] },
+    },
+  })
+  const rackQuote = await prisma.quotation.create({
+    data: {
+      rfqId: rackRfq.id, vendorId: fastlog.id, deliveryDays: 20, taxRate: 18, subtotal: 140000, taxAmount: 25200, total: 165200, status: "approved",
+      items: { create: [{ name: "Storage rack", quantity: 20, unitPrice: 7000, total: 140000 }] },
+    },
+  })
+  await prisma.approval.create({ data: { quotationId: rackQuote.id, stage: 1, status: "approved", approverId: officer.id, decidedAt: new Date("2025-07-08T10:00:00") } })
+  await prisma.approval.create({ data: { quotationId: rackQuote.id, stage: 2, status: "approved", approverId: manager.id, decidedAt: new Date("2025-07-09T10:00:00") } })
+  await prisma.purchaseOrder.create({ data: { poNumber: "PO-2025-0090", quotationId: rackQuote.id, vendorId: fastlog.id, status: "issued", poDate: new Date("2025-07-10") } })
+
+  const sentEmails = [
+    { to: officeplus.email || "vendor@example.com", subject: "Invoice INV-2025-0042 from VendorBridge", body: `Dear ${officeplus.name},\n\nPlease find invoice INV-2025-0042 for a total of INR ${total}.\nDue date: 21 Jun 2025.\n\nRegards,\nVendorBridge`, status: "simulated", relatedType: "invoice", relatedId: mainInvoice.id, createdAt: new Date("2025-05-22T10:15:00") },
+    { to: techcore.email || "vendor@example.com", subject: "Invoice INV-H-010 from VendorBridge", body: `Dear ${techcore.name},\n\nPlease find invoice INV-H-010 for your records.\n\nRegards,\nVendorBridge`, status: "simulated", relatedType: "invoice", createdAt: new Date("2025-05-05T09:30:00") },
+    { to: fastlog.email || "vendor@example.com", subject: "Invoice INV-H-009 from VendorBridge", body: `Dear ${fastlog.name},\n\nPlease find invoice INV-H-009 for your records.\n\nRegards,\nVendorBridge`, status: "simulated", relatedType: "invoice", createdAt: new Date("2025-04-18T14:05:00") },
+  ]
+  for (const e of sentEmails) {
+    await prisma.emailLog.create({ data: e })
+  }
+
+  console.log("Seed complete: demo records span every pipeline stage (draft, quotation, approval, PO, invoice, done)")
 }
 
 main()

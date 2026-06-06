@@ -23,3 +23,11 @@ export function useSaveVendor() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["vendors"] }),
   })
 }
+
+export function useDeleteVendor() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id) => api(`/vendors/${id}`, { method: "DELETE" }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["vendors"] }),
+  })
+}

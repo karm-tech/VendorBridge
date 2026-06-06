@@ -1,6 +1,6 @@
 import { useState } from "react"
-import { Link, useParams } from "react-router-dom"
-import { ArrowLeft, CheckCircle2, XCircle, Clock, Loader2 } from "lucide-react"
+import { Link, useParams, useNavigate } from "react-router-dom"
+import { ArrowLeft, CheckCircle2, XCircle, Clock, Loader2, ShoppingCart, ArrowRight } from "lucide-react"
 import { PageHeader } from "@/components/common/PageHeader"
 import { StatusBadge } from "@/components/common/StatusBadge"
 import { Button } from "@/components/ui/button"
@@ -10,7 +10,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { cn, formatINR, formatDate } from "@/lib/utils"
 import { useApprovalDetail, useDecideApproval } from "@/features/approvals/hooks"
+import { useGeneratePurchaseOrder } from "@/features/purchase-orders/hooks"
 import { stageName } from "@/features/approvals/constants"
+import { StageTracker } from "@/components/common/StageTracker"
+import { PIPELINE_STAGES, quotationStage } from "@/features/rfq/stage"
+import { useAuth } from "@/features/auth/AuthContext"
 
 function SummaryRow({ label, value, mono }) {
   return (
@@ -25,6 +29,11 @@ export function ApprovalDetailPage() {
   const { quotationId } = useParams()
   const { data: q, isLoading } = useApprovalDetail(quotationId)
   const decide = useDecideApproval()
+  const genPO = useGeneratePurchaseOrder()
+  const navigate = useNavigate()
+  const { can } = useAuth()
+  const canDecide = can("approval:decide")
+  const canPO = can("po:write")
   const [remarks, setRemarks] = useState("")
   const [error, setError] = useState("")
 
@@ -44,6 +53,16 @@ export function ApprovalDetailPage() {
     }
   }
 
+  async function handleGeneratePO() {
+    setError("")
+    try {
+      await genPO.mutateAsync(q.id)
+      navigate("/purchase-orders")
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -52,6 +71,10 @@ export function ApprovalDetailPage() {
         </Link>
         <PageHeader title="Approval Workflow" description={q.rfq?.title} />
       </div>
+
+      <Card className="p-5">
+        <StageTracker stages={PIPELINE_STAGES} current={quotationStage(q)} />
+      </Card>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         <Card className="space-y-5 p-6 lg:col-span-2">
@@ -101,7 +124,7 @@ export function ApprovalDetailPage() {
                     )}
                     {a.remarks && <p className="mt-1 text-sm italic text-muted-foreground">“{a.remarks}”</p>}
 
-                    {isActive && (
+                    {isActive && canDecide && (
                       <div className="mt-3 space-y-3 rounded-lg border border-border bg-muted/30 p-3">
                         <div className="space-y-1.5">
                           <Label htmlFor="remarks">Remarks (optional)</Label>
@@ -129,6 +152,11 @@ export function ApprovalDetailPage() {
                         </div>
                       </div>
                     )}
+                    {isActive && !canDecide && (
+                      <p className="mt-3 rounded-lg bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+                        Awaiting a Manager / Approver decision.
+                      </p>
+                    )}
                   </div>
                 </li>
               )
@@ -136,8 +164,26 @@ export function ApprovalDetailPage() {
           </ol>
 
           {!active && (
-            <div className="rounded-lg bg-accent/40 px-4 py-3 text-sm text-muted-foreground">
-              This workflow is complete — the quotation is now <span className="font-medium text-foreground">{q.status}</span>.
+            <div className="space-y-3 rounded-lg bg-accent/40 px-4 py-3">
+              <p className="text-sm text-muted-foreground">
+                This workflow is complete — the quotation is now{" "}
+                <span className="font-medium text-foreground">{q.status}</span>.
+              </p>
+              {q.status === "approved" &&
+                (q.purchaseOrder ? (
+                  <Button asChild size="sm">
+                    <Link to="/purchase-orders">
+                      View Purchase Order <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                ) : canPO ? (
+                  <Button size="sm" onClick={handleGeneratePO} disabled={genPO.isPending}>
+                    {genPO.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
+                    Generate Purchase Order
+                  </Button>
+                ) : (
+                  <p className="text-xs text-muted-foreground">A purchase order has not been generated yet.</p>
+                ))}
             </div>
           )}
         </Card>
