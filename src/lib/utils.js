@@ -34,6 +34,18 @@ export function formatDate(value) {
   }).format(date)
 }
 
+export function formatDateTime(value) {
+  if (!value) return ""
+  const date = value instanceof Date ? value : new Date(value)
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date)
+}
+
 export function initials(name) {
   if (!name) return "U"
   return name

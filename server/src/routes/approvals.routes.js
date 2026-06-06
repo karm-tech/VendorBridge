@@ -5,6 +5,7 @@ import { authenticate } from "../middleware/auth.js"
 import { requireRole } from "../middleware/requireRole.js"
 import { validate } from "../middleware/validate.js"
 import { emitEvent } from "../lib/socket.js"
+import { logActivity } from "../lib/activity.js"
 
 const router = Router()
 const DECIDE_ROLES = ["admin", "manager", "procurement_officer"]
@@ -89,6 +90,13 @@ router.patch("/:approvalId/decide", requireRole(...DECIDE_ROLES), validate(decid
       }
     }
 
+    await logActivity({
+      type: "approval",
+      message: `Approval ${decision} at stage ${approval.stage}`,
+      userId: req.user.id,
+      entityType: "quotation",
+      entityId: approval.quotationId,
+    })
     emitEvent("approval:decided", { quotationId: approval.quotationId, decision })
     res.json({ approval: updated })
   } catch (err) {
