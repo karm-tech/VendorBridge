@@ -1,9 +1,15 @@
-import { Link } from "react-router-dom"
-import { ShieldCheck, BarChart3, Workflow } from "lucide-react"
+import { useState } from "react"
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { ShieldCheck, BarChart3, Workflow, Sparkles, Loader2, AlertCircle } from "lucide-react"
 import { Logo } from "@/components/brand/Logo"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useAuth } from "@/features/auth/AuthContext"
+import { DEMO_PRIMARY, DEMO_ROLES, DEMO_PASSWORD } from "@/features/auth/demo"
 
 const highlights = [
   { icon: Workflow, text: "End-to-end procurement workflow in one place" },
@@ -11,7 +17,50 @@ const highlights = [
   { icon: BarChart3, text: "Real-time spend analytics and reporting" },
 ]
 
+const schema = z.object({
+  email: z.string().email("Enter a valid email"),
+  password: z.string().min(1, "Password is required"),
+})
+
 export function LoginPage() {
+  const { user, login } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [formError, setFormError] = useState("")
+  const [demoLoading, setDemoLoading] = useState("")
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({ resolver: zodResolver(schema), defaultValues: { email: "", password: "" } })
+
+  if (user) return <Navigate to="/dashboard" replace />
+  const from = location.state?.from || "/dashboard"
+
+  async function onSubmit(values) {
+    setFormError("")
+    try {
+      await login(values.email, values.password)
+      navigate(from, { replace: true })
+    } catch (err) {
+      setFormError(err.message)
+    }
+  }
+
+  async function demoLogin(email) {
+    setFormError("")
+    setDemoLoading(email)
+    try {
+      await login(email, DEMO_PASSWORD)
+      navigate("/dashboard", { replace: true })
+    } catch (err) {
+      setFormError(err.message)
+      setDemoLoading("")
+    }
+  }
+
+  const anyDemoLoading = Boolean(demoLoading)
+
   return (
     <div className="flex min-h-screen bg-background">
       <div
@@ -42,7 +91,7 @@ export function LoginPage() {
       </div>
 
       <div className="flex w-full items-center justify-center p-6 lg:w-1/2">
-        <div className="w-full max-w-sm space-y-8">
+        <div className="w-full max-w-sm space-y-7">
           <div className="lg:hidden">
             <Logo />
           </div>
@@ -51,10 +100,18 @@ export function LoginPage() {
             <p className="text-sm text-muted-foreground">Sign in to your VendorBridge workspace.</p>
           </div>
 
-          <form className="space-y-4">
+          {formError && (
+            <div className="flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {formError}
+            </div>
+          )}
+
+          <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="you@company.com" autoComplete="email" />
+              <Input id="email" type="email" placeholder="you@company.com" autoComplete="email" {...register("email")} />
+              {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -63,12 +120,51 @@ export function LoginPage() {
                   Forgot password?
                 </Link>
               </div>
-              <Input id="password" type="password" placeholder="••••••••" autoComplete="current-password" />
+              <Input id="password" type="password" placeholder="••••••••" autoComplete="current-password" {...register("password")} />
+              {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
             </div>
-            <Button asChild className="w-full" size="lg">
-              <Link to="/dashboard">Sign in</Link>
+            <Button type="submit" className="w-full" size="lg" disabled={isSubmitting || anyDemoLoading}>
+              {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              Sign in
             </Button>
           </form>
+
+          <div className="space-y-3">
+            <div className="relative flex items-center">
+              <div className="h-px flex-1 bg-border" />
+              <span className="px-3 text-xs text-muted-foreground">or try a live demo</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full gap-2"
+              size="lg"
+              onClick={() => demoLogin(DEMO_PRIMARY.email)}
+              disabled={anyDemoLoading || isSubmitting}
+            >
+              {demoLoading === DEMO_PRIMARY.email ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4 text-primary" />
+              )}
+              Explore the live demo
+            </Button>
+            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+              <span>or as</span>
+              {DEMO_ROLES.map((acc) => (
+                <button
+                  key={acc.email}
+                  type="button"
+                  onClick={() => demoLogin(acc.email)}
+                  disabled={anyDemoLoading || isSubmitting}
+                  className="rounded-md px-2 py-1 font-medium text-primary transition-colors hover:bg-accent disabled:opacity-50"
+                >
+                  {demoLoading === acc.email ? "..." : acc.role}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <p className="text-center text-sm text-muted-foreground">
             New to VendorBridge?{" "}
