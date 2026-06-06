@@ -91,6 +91,13 @@ router.patch("/:id/select", requireRole(...SELECT_ROLES), async (req, res, next)
     await prisma.quotation.updateMany({ where: { rfqId: quotation.rfqId }, data: { status: "submitted" } })
     const selected = await prisma.quotation.update({ where: { id: quotation.id }, data: { status: "selected" } })
     await prisma.rfq.update({ where: { id: quotation.rfqId }, data: { status: "awarded" } }).catch(() => {})
+
+    const existingApprovals = await prisma.approval.count({ where: { quotationId: quotation.id } })
+    if (existingApprovals === 0) {
+      await prisma.approval.create({ data: { quotationId: quotation.id, stage: 1, status: "pending" } })
+      await prisma.approval.create({ data: { quotationId: quotation.id, stage: 2, status: "pending" } })
+    }
+
     emitEvent("quotation:selected", { id: selected.id, rfqId: quotation.rfqId })
     res.json({ quotation: selected })
   } catch (err) {
