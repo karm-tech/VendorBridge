@@ -11,6 +11,7 @@ import { CreateRfqPage } from "@/features/rfq/pages/CreateRfqPage"
 import { QuotationsPage } from "@/features/quotations/pages/QuotationsPage"
 import { ComparisonPage } from "@/features/quotations/pages/ComparisonPage"
 import { ApprovalsPage } from "@/features/approvals/pages/ApprovalsPage"
+import { ApprovalDetailPage } from "@/features/approvals/pages/ApprovalDetailPage"
 import { PurchaseOrdersPage } from "@/features/purchase-orders/pages/PurchaseOrdersPage"
 import { InvoicesPage } from "@/features/invoices/pages/InvoicesPage"
 import { ReportsPage } from "@/features/reports/pages/ReportsPage"
@@ -32,6 +33,7 @@ export function App() {
               <Route path="/quotations" element={<QuotationsPage />} />
               <Route path="/quotations/:rfqId" element={<ComparisonPage />} />
               <Route path="/approvals" element={<ApprovalsPage />} />
+              <Route path="/approvals/:quotationId" element={<ApprovalDetailPage />} />
               <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
               <Route path="/invoices" element={<InvoicesPage />} />
               <Route path="/reports" element={<ReportsPage />} />

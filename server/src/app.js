@@ -5,6 +5,7 @@ import healthRoutes from "./routes/health.routes.js"
 import vendorRoutes from "./routes/vendors.routes.js"
 import rfqRoutes from "./routes/rfqs.routes.js"
 import quotationRoutes from "./routes/quotations.routes.js"
+import approvalRoutes from "./routes/approvals.routes.js"
 import { notFound, errorHandler } from "./middleware/error.js"
 
 export function createApp() {
@@ -18,6 +19,7 @@ export function createApp() {
   app.use("/api/vendors", vendorRoutes)
   app.use("/api/rfqs", rfqRoutes)
   app.use("/api/quotations", quotationRoutes)
+  app.use("/api/approvals", approvalRoutes)
 
   app.use("/api", notFound)
   app.use(errorHandler)
