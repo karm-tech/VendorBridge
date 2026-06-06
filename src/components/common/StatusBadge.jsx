@@ -6,6 +6,7 @@ const STATUS_VARIANTS = {
   paid: "success",
   completed: "success",
   selected: "success",
+  awarded: "success",
   open: "default",
   responded: "default",
   issued: "default",

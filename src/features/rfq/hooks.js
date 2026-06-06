@@ -11,6 +11,14 @@ export function useRfqs(filters = {}) {
   })
 }
 
+export function useRfq(id) {
+  return useQuery({
+    queryKey: ["rfq", id],
+    queryFn: () => api(`/rfqs/${id}`).then((d) => d.rfq),
+    enabled: Boolean(id),
+  })
+}
+
 export function useCreateRfq() {
   const queryClient = useQueryClient()
   return useMutation({
