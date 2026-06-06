@@ -211,7 +211,70 @@ async function main() {
     await prisma.activityLog.create({ data: log })
   }
 
-  console.log(`Seed complete: 4 vendors, 4 users, ${quotations.length} quotations, 1 PO, 1 invoice`)
+  const history = [
+    { v: techcore, t: "Laptops — batch 1", c: "IT Hardware", amt: 180000, d: "2024-12-12", s: "paid" },
+    { v: officeplus, t: "Stationery — December", c: "Stationery", amt: 45000, d: "2024-12-20", s: "paid" },
+    { v: infra, t: "Workstations", c: "Furniture", amt: 120000, d: "2025-01-15", s: "paid" },
+    { v: fastlog, t: "Logistics — Q1", c: "Logistics", amt: 110000, d: "2025-01-30", s: "paid" },
+    { v: techcore, t: "Monitors", c: "IT Hardware", amt: 140000, d: "2025-02-08", s: "paid" },
+    { v: infra, t: "Storage cabinets", c: "Furniture", amt: 90000, d: "2025-03-22", s: "paid" },
+    { v: officeplus, t: "Stationery — March", c: "Stationery", amt: 38000, d: "2025-03-10", s: "paid" },
+    { v: techcore, t: "Networking gear", c: "IT Hardware", amt: 150000, d: "2025-04-20", s: "pending" },
+    { v: techcore, t: "Servers", c: "IT Hardware", amt: 130000, d: "2025-05-18", s: "pending" },
+    { v: fastlog, t: "Logistics — Q2", c: "Logistics", amt: 95000, d: "2025-05-05", s: "pending" },
+  ]
+
+  let seq = 1
+  for (const rec of history) {
+    const rfqH = await prisma.rfq.create({
+      data: { title: rec.t, category: rec.c, status: "awarded", createdById: officer.id, deadline: new Date(rec.d) },
+    })
+    const subtotal = rec.amt
+    const tax = Math.round(subtotal * 0.18)
+    const quoteH = await prisma.quotation.create({
+      data: {
+        rfqId: rfqH.id,
+        vendorId: rec.v.id,
+        deliveryDays: 10,
+        taxRate: 18,
+        subtotal,
+        taxAmount: tax,
+        total: subtotal + tax,
+        status: "approved",
+        items: { create: [{ name: rec.t, quantity: 1, unitPrice: subtotal, total: subtotal }] },
+      },
+    })
+    const poH = await prisma.purchaseOrder.create({
+      data: {
+        poNumber: `PO-H-${String(seq).padStart(3, "0")}`,
+        quotationId: quoteH.id,
+        vendorId: rec.v.id,
+        status: "issued",
+        poDate: new Date(rec.d),
+      },
+    })
+    const cg = Math.round(subtotal * 0.09)
+    await prisma.invoice.create({
+      data: {
+        invoiceNumber: `INV-H-${String(seq).padStart(3, "0")}`,
+        purchaseOrderId: poH.id,
+        vendorId: rec.v.id,
+        invoiceDate: new Date(rec.d),
+        dueDate: new Date(rec.d),
+        subtotal,
+        cgst: cg,
+        sgst: cg,
+        total: subtotal + cg * 2,
+        status: rec.s,
+        items: { create: [{ name: rec.t, quantity: 1, unitPrice: subtotal, total: subtotal }] },
+      },
+    })
+    seq++
+  }
+
+  console.log(
+    `Seed complete: 4 vendors, 4 users, ${quotations.length} quotations, ${history.length + 1} POs, ${history.length + 1} invoices`
+  )
 }
 
 main()

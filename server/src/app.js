@@ -8,6 +8,7 @@ import quotationRoutes from "./routes/quotations.routes.js"
 import approvalRoutes from "./routes/approvals.routes.js"
 import purchaseOrderRoutes from "./routes/purchaseOrders.routes.js"
 import invoiceRoutes from "./routes/invoices.routes.js"
+import reportRoutes from "./routes/reports.routes.js"
 import { notFound, errorHandler } from "./middleware/error.js"
 
 export function createApp() {
@@ -24,6 +25,7 @@ export function createApp() {
   app.use("/api/approvals", approvalRoutes)
   app.use("/api/purchase-orders", purchaseOrderRoutes)
   app.use("/api/invoices", invoiceRoutes)
+  app.use("/api/reports", reportRoutes)
 
   app.use("/api", notFound)
   app.use(errorHandler)
